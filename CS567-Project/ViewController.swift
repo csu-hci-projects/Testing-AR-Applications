@@ -22,6 +22,8 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
         // Show statistics such as fps and timing information
         sceneView.showsStatistics = true
+        
+        sceneView.debugOptions = [.showFeaturePoints, .showWireframe]
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -61,6 +63,26 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         let z = CGFloat(planeAnchor.center.z)
         planeNode.position = SCNVector3(x,y,z)
         planeNode.eulerAngles.x = -.pi / 2
+        
+        
+        let geometry = SCNSphere(radius: 0.01)
+        geometry.firstMaterial?.diffuse.contents = UIColor.red
+        
+        let node0 = SCNNode(geometry: geometry)
+        node0.position = SCNVector3(planeAnchor.transform.columns.0.x, planeAnchor.transform.columns.0.y, planeAnchor.transform.columns.0.z)
+        sceneView.scene.rootNode.addChildNode(node0)
+        
+        let node1 = SCNNode(geometry: geometry)
+        node1.position = SCNVector3(planeAnchor.transform.columns.1.x, planeAnchor.transform.columns.1.y, planeAnchor.transform.columns.1.z)
+        sceneView.scene.rootNode.addChildNode(node1)
+        
+        let node2 = SCNNode(geometry: geometry)
+        node2.position = SCNVector3(planeAnchor.transform.columns.2.x, planeAnchor.transform.columns.2.y, planeAnchor.transform.columns.2.z)
+        sceneView.scene.rootNode.addChildNode(node2)
+        
+        let node3 = SCNNode(geometry: geometry)
+        node3.position = SCNVector3(planeAnchor.transform.columns.3.x, planeAnchor.transform.columns.3.y, planeAnchor.transform.columns.3.z)
+        sceneView.scene.rootNode.addChildNode(node3)
         
         node.addChildNode(planeNode)
     }
