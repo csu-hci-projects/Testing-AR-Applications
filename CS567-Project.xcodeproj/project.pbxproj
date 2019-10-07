@@ -47,6 +47,7 @@
 		B692C2AE2344D2AD006FF55B /* CS567-ProjectUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "CS567-ProjectUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B692C2B22344D2AD006FF55B /* CS567_ProjectUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CS567_ProjectUITests.swift; sourceTree = "<group>"; };
 		B692C2B42344D2AD006FF55B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B692C2C023463FE8006FF55B /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -77,6 +78,7 @@
 		B692C2842344D2AB006FF55B = {
 			isa = PBXGroup;
 			children = (
+				B692C2C023463FE8006FF55B /* README.md */,
 				B692C28F2344D2AB006FF55B /* CS567-Project */,
 				B692C2A62344D2AD006FF55B /* CS567-ProjectTests */,
 				B692C2B12344D2AD006FF55B /* CS567-ProjectUITests */,
