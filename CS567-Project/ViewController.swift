@@ -10,7 +10,25 @@ import UIKit
 import SceneKit
 import ARKit
 
+extension SCNGeometry {
+    class func lineFrom(vector vector1: SCNVector3, toVector vector2: SCNVector3) -> SCNGeometry {
+        let indices: [Int32] = [0, 1]
+        
+        let source = SCNGeometrySource(vertices: [vector1, vector2])
+        let element = SCNGeometryElement(indices: indices, primitiveType: .line)
+        
+        return SCNGeometry(sources: [source], elements: [element])
+    }
+}
+
 class ViewController: UIViewController, ARSCNViewDelegate {
+    var prevNode: SCNNode
+    var firstPoint: Bool = true
+    
+    required init?(coder aDecoder: NSCoder) {
+        self.prevNode = SCNNode()
+        super.init(coder: aDecoder)
+    }
 
     @IBOutlet var sceneView: ARSCNView!
     
@@ -24,7 +42,48 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         sceneView.showsStatistics = true
         
         sceneView.debugOptions = [.showFeaturePoints, .showWireframe]
+        
+        let gestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(tapped))
+        sceneView.addGestureRecognizer(gestureRecognizer)
     }
+    
+    @objc func tapped(gesture: UITapGestureRecognizer) {
+        let touchPosition = gesture.location(in: sceneView)
+        let hitTestResults = sceneView.hitTest(touchPosition, types: .existingPlane)
+        guard let hitTest = hitTestResults.first else { return }
+        let geometry = SCNSphere(radius: 0.01)
+        geometry.firstMaterial?.diffuse.contents = UIColor.red
+        let node = SCNNode(geometry: geometry)
+        node.position = SCNVector3(hitTest.worldTransform.columns.3.x, hitTest.worldTransform.columns.3.y, hitTest.worldTransform.columns.3.z)
+        
+        if (!firstPoint) {
+            addLineBetween(start: prevNode.position, end: node.position)
+        } else {
+            firstPoint = false
+        }
+        prevNode = node
+        sceneView.scene.rootNode.addChildNode(node)
+    }
+    
+    func addLineBetween(start: SCNVector3, end: SCNVector3) {
+        let lineGeometry = SCNGeometry.lineFrom(vector: start, toVector: end)
+        let lineNode = SCNNode(geometry: lineGeometry)
+        
+        sceneView.scene.rootNode.addChildNode(lineNode)
+    }
+    
+//    func addDistanceText(distance: Float, at point: SCNVector3) {
+//        let textGeometry = SCNText(string: String(format: "%.1f\"", distance.metersToInches()), extrusionDepth: 1)
+//        textGeometry.font = UIFont.systemFont(ofSize: 10)
+//        textGeometry.firstMaterial?.diffuse.contents = UIColor.black
+//
+//        let textNode = SCNNode(geometry: textGeometry)
+//        textNode.position = SCNVector3Make(point.x, point.y, point.z);
+//        textNode.scale = SCNVector3Make(0.005, 0.005, 0.005)
+//
+//        sceneView.scene.rootNode.addChildNode(textNode)
+//    }
+    
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -68,17 +127,17 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         let geometry = SCNSphere(radius: 0.01)
         geometry.firstMaterial?.diffuse.contents = UIColor.red
         
-        let node0 = SCNNode(geometry: geometry)
-        node0.position = SCNVector3(planeAnchor.transform.columns.0.x, planeAnchor.transform.columns.0.y, planeAnchor.transform.columns.0.z)
-        sceneView.scene.rootNode.addChildNode(node0)
-        
-        let node1 = SCNNode(geometry: geometry)
-        node1.position = SCNVector3(planeAnchor.transform.columns.1.x, planeAnchor.transform.columns.1.y, planeAnchor.transform.columns.1.z)
-        sceneView.scene.rootNode.addChildNode(node1)
-        
-        let node2 = SCNNode(geometry: geometry)
-        node2.position = SCNVector3(planeAnchor.transform.columns.2.x, planeAnchor.transform.columns.2.y, planeAnchor.transform.columns.2.z)
-        sceneView.scene.rootNode.addChildNode(node2)
+//        let node0 = SCNNode(geometry: geometry)
+//        node0.position = SCNVector3(planeAnchor.transform.columns.0.x, planeAnchor.transform.columns.0.y, planeAnchor.transform.columns.0.z)
+//        sceneView.scene.rootNode.addChildNode(node0)
+//
+//        let node1 = SCNNode(geometry: geometry)
+//        node1.position = SCNVector3(planeAnchor.transform.columns.1.x, planeAnchor.transform.columns.1.y, planeAnchor.transform.columns.1.z)
+//        sceneView.scene.rootNode.addChildNode(node1)
+//
+//        let node2 = SCNNode(geometry: geometry)
+//        node2.position = SCNVector3(planeAnchor.transform.columns.2.x, planeAnchor.transform.columns.2.y, planeAnchor.transform.columns.2.z)
+//        sceneView.scene.rootNode.addChildNode(node2)
         
         let node3 = SCNNode(geometry: geometry)
         node3.position = SCNVector3(planeAnchor.transform.columns.3.x, planeAnchor.transform.columns.3.y, planeAnchor.transform.columns.3.z)
