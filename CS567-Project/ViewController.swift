@@ -21,12 +21,44 @@ extension SCNGeometry {
     }
 }
 
+extension ARPlaneAnchor {
+    // returns a transform matrix from a point
+    func pointTransform(_ x: CGFloat, _ y: CGFloat) -> simd_float4x4 {
+        var tf = simd_float4x4(diagonal: simd_float4(repeating: 1))
+        tf.columns.3 = simd_float4(x: Float(x), y: 0, z: Float(y), w: 1)
+        return tf
+    }
+    
+    var boundaryXYZ: simd_float3x3 {
+        get {
+            let width = CGFloat(extent.x)
+            let height = CGFloat(extent.z)
+            var result = simd_float3x3()
+            let upperLeftTransform = transform * pointTransform(-width / 2, -height / 2)
+            let upperRightTransform = transform * pointTransform(width / 2, -height / 2)
+            let bottomLeftTransform = transform * pointTransform(-width / 2, height / 2)
+            result.columns.0.x = upperLeftTransform.columns.3.x
+            result.columns.0.y = upperLeftTransform.columns.3.y
+            result.columns.0.z = upperLeftTransform.columns.3.z
+            result.columns.1.x = upperRightTransform.columns.3.x
+            result.columns.1.y = upperRightTransform.columns.3.y
+            result.columns.1.z = upperRightTransform.columns.3.z
+            result.columns.2.x = bottomLeftTransform.columns.3.x
+            result.columns.2.y = bottomLeftTransform.columns.3.y
+            result.columns.2.z = bottomLeftTransform.columns.3.z
+            return result
+        }
+    }
+}
+
 class ViewController: UIViewController, ARSCNViewDelegate {
-    var prevNode: SCNNode
-    var firstPoint: Bool = true
+    var firstNode: SCNNode!
+    var secondNode: SCNNode!
+    var lineNode: SCNNode!
+    var firstPlane: ARPlaneAnchor!
+    var secondPlane: ARPlaneAnchor!
     
     required init?(coder aDecoder: NSCoder) {
-        self.prevNode = SCNNode()
         super.init(coder: aDecoder)
     }
 
@@ -56,18 +88,18 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         let node = SCNNode(geometry: geometry)
         node.position = SCNVector3(hitTest.worldTransform.columns.3.x, hitTest.worldTransform.columns.3.y, hitTest.worldTransform.columns.3.z)
         
-        if (!firstPoint) {
-            addLineBetween(start: prevNode.position, end: node.position)
-        } else {
-            firstPoint = false
-        }
-        prevNode = node
+//        if (!firstPoint) {
+//            addLineBetween(start: prevNode.position, end: node.position)
+//        } else {
+//            firstPoint = false
+//        }
+//        prevNode = node
         sceneView.scene.rootNode.addChildNode(node)
     }
     
     func addLineBetween(start: SCNVector3, end: SCNVector3) {
         let lineGeometry = SCNGeometry.lineFrom(vector: start, toVector: end)
-        let lineNode = SCNNode(geometry: lineGeometry)
+        lineNode = SCNNode(geometry: lineGeometry)
         
         sceneView.scene.rootNode.addChildNode(lineNode)
     }
@@ -106,6 +138,31 @@ class ViewController: UIViewController, ARSCNViewDelegate {
 
     // MARK: - ARSCNViewDelegate
     
+    fileprivate func findIntersect() {
+        if (firstPlane != nil && secondPlane != nil) {
+            if (firstNode != nil) { firstNode.removeFromParentNode() }
+            if (secondNode != nil) { secondNode.removeFromParentNode() }
+            if (lineNode != nil) { lineNode.removeFromParentNode() }
+            
+            let geometry = SCNSphere(radius: 0.01)
+            geometry.firstMaterial?.diffuse.contents = UIColor.red
+            
+            let planeIntersect: PlaneIntersection = PlaneIntersection(plane1: firstPlane.boundaryXYZ, plane2: secondPlane.boundaryXYZ)
+            
+            firstNode = SCNNode(geometry: geometry)
+            let point1 = planeIntersect.pointAt(y: -1)
+            firstNode.position = SCNVector3(x: point1.x, y: -1, z: point1.y)
+            sceneView.scene.rootNode.addChildNode(firstNode)
+            
+            secondNode = SCNNode(geometry: geometry)
+            let point2 = planeIntersect.pointAt(y: 1)
+            secondNode.position = SCNVector3(x: point2.x, y: 1, z: point2.y)
+            sceneView.scene.rootNode.addChildNode(secondNode)
+            
+            addLineBetween(start: firstNode.position, end: secondNode.position)
+        }
+    }
+    
     func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
         guard let planeAnchor = anchor as? ARPlaneAnchor else { return }
         
@@ -122,36 +179,39 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         let z = CGFloat(planeAnchor.center.z)
         planeNode.position = SCNVector3(x,y,z)
         planeNode.eulerAngles.x = -.pi / 2
-        
-        
-        let geometry = SCNSphere(radius: 0.01)
-        geometry.firstMaterial?.diffuse.contents = UIColor.red
-        
-//        let node0 = SCNNode(geometry: geometry)
-//        node0.position = SCNVector3(planeAnchor.transform.columns.0.x, planeAnchor.transform.columns.0.y, planeAnchor.transform.columns.0.z)
-//        sceneView.scene.rootNode.addChildNode(node0)
-//
-//        let node1 = SCNNode(geometry: geometry)
-//        node1.position = SCNVector3(planeAnchor.transform.columns.1.x, planeAnchor.transform.columns.1.y, planeAnchor.transform.columns.1.z)
-//        sceneView.scene.rootNode.addChildNode(node1)
-//
-//        let node2 = SCNNode(geometry: geometry)
-//        node2.position = SCNVector3(planeAnchor.transform.columns.2.x, planeAnchor.transform.columns.2.y, planeAnchor.transform.columns.2.z)
-//        sceneView.scene.rootNode.addChildNode(node2)
-        
-        let node3 = SCNNode(geometry: geometry)
-        node3.position = SCNVector3(planeAnchor.transform.columns.3.x, planeAnchor.transform.columns.3.y, planeAnchor.transform.columns.3.z)
-        sceneView.scene.rootNode.addChildNode(node3)
+                
+        findIntersect()
         
         node.addChildNode(planeNode)
     }
     
     func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
+        //        sceneView.scene.rootNode.enumerateChildNodes { (node, stop) in
+//            node.removeFromParentNode() }
 
         guard let planeAnchor = anchor as?  ARPlaneAnchor,
             let planeNode = node.childNodes.first,
             let plane = planeNode.geometry as? SCNPlane
             else { return }
+        
+//        let geometry = SCNSphere(radius: 0.01)
+//        geometry.firstMaterial?.diffuse.contents = UIColor.red
+//
+//        let node0 = SCNNode(geometry: geometry)
+//        node0.position = SCNVector3.init(planeAnchor.boundaryXYZ.columns.0)
+//        sceneView.scene.rootNode.addChildNode(node0)
+//
+//        let node1 = SCNNode(geometry: geometry)
+//        node1.position = SCNVector3.init(planeAnchor.boundaryXYZ.columns.1)
+//        sceneView.scene.rootNode.addChildNode(node1)
+//
+//        let node2 = SCNNode(geometry: geometry)
+//        node2.position = SCNVector3.init(planeAnchor.boundaryXYZ.columns.2)
+//        sceneView.scene.rootNode.addChildNode(node2)
+//
+//        let node3 = SCNNode(geometry: geometry)
+//        node3.position = SCNVector3.init(planeAnchor.boundaryXYZ.columns.3)
+//        sceneView.scene.rootNode.addChildNode(node3)
          
         let width = CGFloat(planeAnchor.extent.x)
         let height = CGFloat(planeAnchor.extent.z)
@@ -161,6 +221,8 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         let x = CGFloat(planeAnchor.center.x)
         let y = CGFloat(planeAnchor.center.y)
         let z = CGFloat(planeAnchor.center.z)
+        
+        findIntersect()
         
         planeNode.position = SCNVector3(x, y, z)
     }

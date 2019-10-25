@@ -14,6 +14,9 @@
 		B692C29D2344D2AD006FF55B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B692C29B2344D2AD006FF55B /* LaunchScreen.storyboard */; };
 		B692C2A82344D2AD006FF55B /* CS567_ProjectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B692C2A72344D2AD006FF55B /* CS567_ProjectTests.swift */; };
 		B692C2B32344D2AD006FF55B /* CS567_ProjectUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B692C2B22344D2AD006FF55B /* CS567_ProjectUITests.swift */; };
+		B6F2D20A236085A0004406B3 /* PlaneIntersection.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6F2D209236085A0004406B3 /* PlaneIntersection.swift */; };
+		B6F2D21123609114004406B3 /* PlaneIntersection.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6F2D209236085A0004406B3 /* PlaneIntersection.swift */; };
+		B6F2D2132363500E004406B3 /* CS514_PROPOSAL.pdf in Resources */ = {isa = PBXBuildFile; fileRef = B6F2D2122363500E004406B3 /* CS514_PROPOSAL.pdf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -48,6 +51,8 @@
 		B692C2B22344D2AD006FF55B /* CS567_ProjectUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CS567_ProjectUITests.swift; sourceTree = "<group>"; };
 		B692C2B42344D2AD006FF55B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B692C2C023463FE8006FF55B /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		B6F2D209236085A0004406B3 /* PlaneIntersection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaneIntersection.swift; sourceTree = "<group>"; };
+		B6F2D2122363500E004406B3 /* CS514_PROPOSAL.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = CS514_PROPOSAL.pdf; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -78,6 +83,7 @@
 		B692C2842344D2AB006FF55B = {
 			isa = PBXGroup;
 			children = (
+				B6F2D2122363500E004406B3 /* CS514_PROPOSAL.pdf */,
 				B692C2C023463FE8006FF55B /* README.md */,
 				B692C28F2344D2AB006FF55B /* CS567-Project */,
 				B692C2A62344D2AD006FF55B /* CS567-ProjectTests */,
@@ -105,6 +111,7 @@
 				B692C2992344D2AD006FF55B /* Assets.xcassets */,
 				B692C29B2344D2AD006FF55B /* LaunchScreen.storyboard */,
 				B692C29E2344D2AD006FF55B /* Info.plist */,
+				B6F2D209236085A0004406B3 /* PlaneIntersection.swift */,
 			);
 			path = "CS567-Project";
 			sourceTree = "<group>";
@@ -232,6 +239,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B692C29D2344D2AD006FF55B /* LaunchScreen.storyboard in Resources */,
+				B6F2D2132363500E004406B3 /* CS514_PROPOSAL.pdf in Resources */,
 				B692C29A2344D2AD006FF55B /* Assets.xcassets in Resources */,
 				B692C2982344D2AB006FF55B /* Main.storyboard in Resources */,
 			);
@@ -258,6 +266,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B6F2D20A236085A0004406B3 /* PlaneIntersection.swift in Sources */,
 				B692C2952344D2AB006FF55B /* ViewController.swift in Sources */,
 				B692C2912344D2AB006FF55B /* AppDelegate.swift in Sources */,
 			);
@@ -267,6 +276,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B6F2D21123609114004406B3 /* PlaneIntersection.swift in Sources */,
 				B692C2A82344D2AD006FF55B /* CS567_ProjectTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -435,7 +445,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 66Y5GBRR6Z;
 				INFOPLIST_FILE = "CS567-Project/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 12.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -454,7 +464,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 66Y5GBRR6Z;
 				INFOPLIST_FILE = "CS567-Project/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 12.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
