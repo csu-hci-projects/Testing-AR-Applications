@@ -14,3 +14,7 @@
     * relearn plane geometry/math and figure out how to find the intersection of two planes and complete the application
     * work on proposal for CS514 - research test generation techniques to apply to 3D UI
 
+## Checkpoint 2:
+
+* Completed development of intersecting two planes - some minor changes needed, but application is mostly complete
+* Submitted proposal for CS514 and came up with research question -> [pdf](https://github.com/csu-hci-projects/Testing-AR-Applications/blob/master/CS514_PROPOSAL.pdf)
