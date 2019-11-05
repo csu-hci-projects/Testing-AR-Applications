@@ -1,4 +1,4 @@
-#  CS567 Final Project - Testing AR Applications
+#  CS567 Final Project - ~~Testing AR Applications~~ Systematic Test Case Generation For Augmented Reality Applications
 
 ## Checkpoint 1 updates:
 
@@ -18,3 +18,8 @@
 
 * Completed development of intersecting two planes - some minor changes needed, but application is mostly complete
 * Submitted proposal for CS514 and came up with research question -> [pdf](https://github.com/csu-hci-projects/Testing-AR-Applications/blob/master/CS514_PROPOSAL.pdf)
+
+## Checkpoint 3:
+
+* Revised proposal for CS514 with new title - **Systematic Test Case Generation For Augmented Reality Applications**
+* More to come by friday...
