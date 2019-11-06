@@ -52,6 +52,7 @@ extension ARPlaneAnchor {
 }
 
 class ViewController: UIViewController, ARSCNViewDelegate {
+    var building: Building = Building();
     var firstNode: SCNNode!
     var secondNode: SCNNode!
     var lineNode: SCNNode!
