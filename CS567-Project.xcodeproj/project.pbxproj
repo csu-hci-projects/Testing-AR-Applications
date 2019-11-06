@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2CB95A832373128100A3581A /* Building.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CB95A822373128100A3581A /* Building.swift */; };
+		2CB95A842373128100A3581A /* Building.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CB95A822373128100A3581A /* Building.swift */; };
 		B692C2912344D2AB006FF55B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B692C2902344D2AB006FF55B /* AppDelegate.swift */; };
 		B692C2952344D2AB006FF55B /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B692C2942344D2AB006FF55B /* ViewController.swift */; };
 		B692C2982344D2AB006FF55B /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B692C2962344D2AB006FF55B /* Main.storyboard */; };
@@ -37,6 +39,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		2CB95A822373128100A3581A /* Building.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Building.swift; sourceTree = "<group>"; };
 		B692C28D2344D2AB006FF55B /* CS567-Project.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "CS567-Project.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B692C2902344D2AB006FF55B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B692C2942344D2AB006FF55B /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -112,6 +115,7 @@
 				B692C29B2344D2AD006FF55B /* LaunchScreen.storyboard */,
 				B692C29E2344D2AD006FF55B /* Info.plist */,
 				B6F2D209236085A0004406B3 /* PlaneIntersection.swift */,
+				2CB95A822373128100A3581A /* Building.swift */,
 			);
 			path = "CS567-Project";
 			sourceTree = "<group>";
@@ -267,6 +271,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B6F2D20A236085A0004406B3 /* PlaneIntersection.swift in Sources */,
+				2CB95A832373128100A3581A /* Building.swift in Sources */,
 				B692C2952344D2AB006FF55B /* ViewController.swift in Sources */,
 				B692C2912344D2AB006FF55B /* AppDelegate.swift in Sources */,
 			);
@@ -277,6 +282,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B6F2D21123609114004406B3 /* PlaneIntersection.swift in Sources */,
+				2CB95A842373128100A3581A /* Building.swift in Sources */,
 				B692C2A82344D2AD006FF55B /* CS567_ProjectTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
