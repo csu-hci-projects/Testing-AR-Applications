@@ -18,8 +18,4 @@ class Building {
     func addCorner(corner: simd_float2) {
         corners.append(corner);
     }
-    
-    func draw(scene: SCNScene) {
-        
-    }
 }
