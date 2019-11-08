@@ -54,14 +54,18 @@ extension ARPlaneAnchor {
 class ViewController: UIViewController, ARSCNViewDelegate {
     var planeAnchors: [ARPlaneAnchor] = [];
     var planeNodes: [SCNNode] = [];
+    var buildCornerNodes: [SCNNode] = [];
+    var selectedBuildingcornerNodes: [SCNNode] = [];
+    var buildingLineNodes: [SCNNode] = [];
+    var selectedeNodes: [Int] = [];
     var building: Building = Building();
-    var firstNode: SCNNode!
-    var secondNode: SCNNode!
-    var lineNode: SCNNode!
-    var firstPlane: ARPlaneAnchor!
-    var secondPlane: ARPlaneAnchor!
+//    var firstNode: SCNNode!
+//    var secondNode: SCNNode!
+//    var lineNode: SCNNode!
+//    var firstPlane: ARPlaneAnchor!
+//    var secondPlane: ARPlaneAnchor!
     
-    func nodeForAnchor(anchor: ARPlaneAnchor) -> SCNNode! {
+    fileprivate func nodeForAnchor(_ anchor: ARPlaneAnchor) -> SCNNode! {
         if let i = planeAnchors.firstIndex(of: anchor) {
             return planeNodes[i]
         } else {
@@ -69,12 +73,21 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         }
     }
     
-    func setAnchor(node: SCNNode, anchor: ARPlaneAnchor) {
+    fileprivate func anchorForNode(node: SCNNode) -> ARPlaneAnchor! {
+        if let i = planeNodes.firstIndex(of: node) {
+            return planeAnchors[i]
+        } else {
+            return nil
+        }
+    }
+    
+    fileprivate func setAnchor(node: SCNNode, anchor: ARPlaneAnchor) {
         if let i = planeNodes.firstIndex(of: node) {
             planeAnchors[i] = anchor
         } else {
             planeNodes.append(node)
             planeAnchors.append(anchor)
+            selectedeNodes.append(0)
         }
     }
     
@@ -99,48 +112,117 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         sceneView.addGestureRecognizer(gestureRecognizer)
     }
     
+    fileprivate func selectNode(_ node: SCNNode) {
+        if let i = planeNodes.firstIndex(of: node) {
+            selectedeNodes[i] = 1
+        }
+        node.geometry?.materials.first?.diffuse.contents = UIColor(displayP3Red: 0, green: 1.0, blue: 0, alpha: 0.5)
+    }
+    
     fileprivate func selectNode(_ planeAnchor: ARPlaneAnchor) {
-        if let node: SCNNode = nodeForAnchor(anchor: planeAnchor) {
-            node.geometry?.materials.first?.diffuse.contents = UIColor(displayP3Red: 0, green: 1.0, blue: 0, alpha: 0.5)
+        if let node: SCNNode = nodeForAnchor(planeAnchor) {
+            selectNode(node)
         }
     }
     
+    fileprivate func deselectNode(_ node: SCNNode) {
+        if let i = planeNodes.firstIndex(of: node) {
+            selectedeNodes[i] = 0
+        }
+        node.geometry?.materials.first?.diffuse.contents = UIColor(displayP3Red: 0, green: 0.0, blue: 0, alpha: 0.5)
+    }
+    
     fileprivate func deselectNode(_ planeAnchor: ARPlaneAnchor) {
-        if let node: SCNNode = nodeForAnchor(anchor: planeAnchor) {
-            node.geometry?.materials.first?.diffuse.contents = UIColor(displayP3Red: 0, green: 0.0, blue: 0, alpha: 0.5)
+        if let node: SCNNode = nodeForAnchor(planeAnchor) {
+            selectNode(node)
+        }
+    }
+    
+    fileprivate func isNodeSelected(_ node: SCNNode) -> Bool {
+        if let i = planeNodes.firstIndex(of: node) {
+            return selectedeNodes[i] == 1
+        } else {
+            return false
         }
     }
     
     @objc func tapped(gesture: UITapGestureRecognizer) {
         let touchPosition = gesture.location(in: sceneView)
-        var hitTestResults = sceneView.hitTest(touchPosition, types: .existingPlane)
+        let hitTestResults = sceneView.hitTest(touchPosition)
         guard let hitTest = hitTestResults.first else { return }
-        if let planeAnchor = hitTest.anchor as? ARPlaneAnchor {
-            if (firstPlane == nil && secondPlane == nil) {
-                firstPlane = planeAnchor
-                selectNode(planeAnchor)
-            } else if (secondPlane == nil && firstPlane != nil && firstPlane != planeAnchor) {
-                secondPlane = planeAnchor
-                selectNode(planeAnchor)
+        guard let textElement = hitTest.node.geometry as? SCNText else {
+            if planeNodes.contains(hitTest.node) {
+                if isNodeSelected(hitTest.node) {
+                    deselectNode(hitTest.node)
+                } else {
+                    selectNode(hitTest.node)
+                }
                 findIntersect()
-            } else if (firstPlane != nil && secondPlane != nil) {
-                deselectNode(firstPlane)
-                deselectNode(secondPlane)
-                firstPlane = nil
-                secondPlane = nil
             }
-        } else {
-            // TODO
-            // if hitTestResults = sceneView.hitTest(touchPosition)
+            return
+        }
+        
+        print(hitTest.node)
+        guard let text: String = textElement.string as? String else { return }
+        print(text)
+        print(buildCornerNodes.count)
+
+        if text == "SELECT" {
+            let green = UIColor.green
+            textElement.materials.first?.diffuse.contents = green
+            guard let cornerNode: SCNNode = hitTest.node.parent else {return}
+            let geometry = SCNSphere(radius: 0.02)
+            geometry.firstMaterial?.diffuse.contents = UIColor.green
+            let newNode = SCNNode(geometry: geometry)
+            newNode.position = cornerNode.position
+            hitTest.node.removeFromParentNode()
+            cornerNode.removeFromParentNode()
+            selectedBuildingcornerNodes.append(cornerNode)
+            drawLines()
+            sceneView.scene.rootNode.addChildNode(newNode)
+        }
+    }
+    
+    func drawLines() {
+        for node in buildingLineNodes {
+            node.removeFromParentNode()
+        }
+        buildingLineNodes = [];
+        for (i,node) in selectedBuildingcornerNodes.enumerated() {
+            if (i < selectedBuildingcornerNodes.count-1) {
+                addLineBetween(start: node.position, end: selectedBuildingcornerNodes[i+1].position)
+            }
         }
     }
     
     func addLineBetween(start: SCNVector3, end: SCNVector3) {
         let lineGeometry = SCNGeometry.lineFrom(vector: start, toVector: end)
-        lineNode = SCNNode(geometry: lineGeometry)
-        
+        let lineNode = SCNNode(geometry: lineGeometry)
+        lineNode.geometry?.materials.first?.diffuse.contents = UIColor.green
         sceneView.scene.rootNode.addChildNode(lineNode)
     }
+    
+    func createTextNode(string: String) -> SCNNode {
+        let text = SCNText(string: string, extrusionDepth: 0.1)
+        text.font = UIFont.systemFont(ofSize: 1.0)
+        text.flatness = 0.005
+        text.firstMaterial?.diffuse.contents = UIColor.red
+
+        let textNode = SCNNode(geometry: text)
+
+        let fontSize = Float(0.04)
+        textNode.scale = SCNVector3(fontSize, fontSize, fontSize)
+
+        return textNode
+    }
+    
+    func addText(string: String, parent: SCNNode) {
+        let textNode = self.createTextNode(string: string)
+        textNode.position = SCNVector3Zero
+
+        parent.addChildNode(textNode)
+    }
+    
     
 //    func addDistanceText(distance: Float, at point: SCNVector3) {
 //        let textGeometry = SCNText(string: String(format: "%.1f\"", distance.metersToInches()), extrusionDepth: 1)
@@ -177,26 +259,33 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     // MARK: - ARSCNViewDelegate
     
     fileprivate func findIntersect() {
-        if (firstNode != nil) { firstNode.removeFromParentNode() }
-        if (secondNode != nil) { secondNode.removeFromParentNode() }
-        if (lineNode != nil) { lineNode.removeFromParentNode() }
+        for node in buildCornerNodes {
+            node.removeFromParentNode()
+        }
+        buildCornerNodes = []
         
         let geometry = SCNSphere(radius: 0.01)
         geometry.firstMaterial?.diffuse.contents = UIColor.red
         
-        let planeIntersect: PlaneIntersection = PlaneIntersection(plane1: firstPlane.boundaryXYZ, plane2: secondPlane.boundaryXYZ)
-        
-        firstNode = SCNNode(geometry: geometry)
-        let point1 = planeIntersect.pointAt(y: -1)
-        firstNode.position = SCNVector3(x: point1.x, y: -1, z: point1.y)
-        sceneView.scene.rootNode.addChildNode(firstNode)
-        
-        secondNode = SCNNode(geometry: geometry)
-        let point2 = planeIntersect.pointAt(y: 1)
-        secondNode.position = SCNVector3(x: point2.x, y: 1, z: point2.y)
-        sceneView.scene.rootNode.addChildNode(secondNode)
-        
-        addLineBetween(start: firstNode.position, end: secondNode.position)
+        for (i, selected) in selectedeNodes.enumerated() {
+            if selected == 1 {
+                for (j, selectedJ) in selectedeNodes.enumerated() {
+                    if selectedJ == 1 && j != i {
+                        let firstPlane = planeAnchors[i]
+                        let secondPlane = planeAnchors[j]
+                        
+                        let planeIntersect: PlaneIntersection = PlaneIntersection(plane1: firstPlane.boundaryXYZ, plane2: secondPlane.boundaryXYZ)
+                        
+                        let node = SCNNode(geometry: geometry)
+                        let point1 = planeIntersect.pointAt(y: 0)
+                        node.position = SCNVector3(x: point1.x, y: 0, z: point1.y)
+                        buildCornerNodes.append(node)
+                        addText(string: "SELECT", parent: node)
+                        sceneView.scene.rootNode.addChildNode(node)
+                    }
+                }
+            }
+        }
     }
     
     func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
@@ -221,8 +310,6 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     }
     
     func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
-        //        sceneView.scene.rootNode.enumerateChildNodes { (node, stop) in
-//            node.removeFromParentNode() }
 
         guard let planeAnchor = anchor as?  ARPlaneAnchor,
             let planeNode = node.childNodes.first,
@@ -230,26 +317,6 @@ class ViewController: UIViewController, ARSCNViewDelegate {
             else { return }
         
         setAnchor(node: planeNode, anchor: planeAnchor)
-
-        
-//        let geometry = SCNSphere(radius: 0.01)
-//        geometry.firstMaterial?.diffuse.contents = UIColor.red
-//
-//        let node0 = SCNNode(geometry: geometry)
-//        node0.position = SCNVector3.init(planeAnchor.boundaryXYZ.columns.0)
-//        sceneView.scene.rootNode.addChildNode(node0)
-//
-//        let node1 = SCNNode(geometry: geometry)
-//        node1.position = SCNVector3.init(planeAnchor.boundaryXYZ.columns.1)
-//        sceneView.scene.rootNode.addChildNode(node1)
-//
-//        let node2 = SCNNode(geometry: geometry)
-//        node2.position = SCNVector3.init(planeAnchor.boundaryXYZ.columns.2)
-//        sceneView.scene.rootNode.addChildNode(node2)
-//
-//        let node3 = SCNNode(geometry: geometry)
-//        node3.position = SCNVector3.init(planeAnchor.boundaryXYZ.columns.3)
-//        sceneView.scene.rootNode.addChildNode(node3)
          
         let width = CGFloat(planeAnchor.extent.x)
         let height = CGFloat(planeAnchor.extent.z)
