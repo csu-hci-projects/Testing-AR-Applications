@@ -22,4 +22,13 @@
 ## Checkpoint 3:
 
 * Revised proposal for CS514 with new title - **Systematic Test Case Generation For Augmented Reality Applications**
-* More to come by friday...
+* Research will focus on automation of generating test cases, not automation of test execuation
+* Generation of test cases is based on depth-first traversal of 3D Objects
+* Generation of tests assumes that an AR application is in a state where 3D objects are visible
+* Similarly to 2D elements, each 3D object is considered a node in a tree where actions can be performed on the node
+* Came up with basic method and stpes for test case generation and will perform execuation manually:
+   1. Manually Determine and setup preconditions for a scenario (number of visible objects, order in which they appear)
+   2. Run depth-first traversal of nodes and perform actions (ex. select, translate, rotate, etc.) - application will have a test mode to automate this.  Method based on 2D GUI algorithms presented in references
+   3. Log/Report generated test cases.
+   4. Return to precondition state manually and execute generated test cases manually.
+  
