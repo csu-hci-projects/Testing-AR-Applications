@@ -22,7 +22,7 @@
 ## Checkpoint 3:
 
 * Revised proposal for CS514 with new title - **Systematic Test Case Generation For Augmented Reality Applications**
-* Research will focus on automation of generating test cases, not automation of test execuation
+* Research will focus on automation of generating test cases, not automation of test execution
 * Generation of test cases is based on depth-first traversal of 3D Objects
 * Generation of tests assumes that an AR application is in a state where 3D objects are visible
 * Similarly to 2D elements, each 3D object is considered a node in a tree where actions can be performed on the node
