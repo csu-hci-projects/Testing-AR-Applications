@@ -146,19 +146,35 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         }
     }
     
+    fileprivate func selectNewNode(_ cornerNode: SCNNode, _ hitTest: SCNHitTestResult) {
+        let geometry = SCNSphere(radius: 0.02)
+        geometry.firstMaterial?.diffuse.contents = UIColor.green
+        let newNode = SCNNode(geometry: geometry)
+        newNode.position = cornerNode.position
+        hitTest.node.removeFromParentNode()
+        cornerNode.removeFromParentNode()
+        selectedBuildingcornerNodes.append(cornerNode)
+        drawLines()
+        sceneView.scene.rootNode.addChildNode(newNode)
+    }
+    
     @objc func tapped(gesture: UITapGestureRecognizer) {
         let touchPosition = gesture.location(in: sceneView)
         let hitTestResults = sceneView.hitTest(touchPosition)
         guard let hitTest = hitTestResults.first else { return }
         guard let textElement = hitTest.node.geometry as? SCNText else {
-            if planeNodes.contains(hitTest.node) {
-                if isNodeSelected(hitTest.node) {
-                    deselectNode(hitTest.node)
-                } else {
-                    selectNode(hitTest.node)
+            guard let sphereElement = hitTest.node.geometry as? SCNSphere else {
+                if planeNodes.contains(hitTest.node) {
+                    if isNodeSelected(hitTest.node) {
+                        deselectNode(hitTest.node)
+                    } else {
+                        selectNode(hitTest.node)
+                    }
+                    findIntersect()
                 }
-                findIntersect()
+                return
             }
+            selectNewNode(hitTest.node, hitTest)
             return
         }
         
@@ -171,15 +187,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
             let green = UIColor.green
             textElement.materials.first?.diffuse.contents = green
             guard let cornerNode: SCNNode = hitTest.node.parent else {return}
-            let geometry = SCNSphere(radius: 0.02)
-            geometry.firstMaterial?.diffuse.contents = UIColor.green
-            let newNode = SCNNode(geometry: geometry)
-            newNode.position = cornerNode.position
-            hitTest.node.removeFromParentNode()
-            cornerNode.removeFromParentNode()
-            selectedBuildingcornerNodes.append(cornerNode)
-            drawLines()
-            sceneView.scene.rootNode.addChildNode(newNode)
+            selectNewNode(cornerNode, hitTest)
         }
     }
     
@@ -190,7 +198,10 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         buildingLineNodes = [];
         for (i,node) in selectedBuildingcornerNodes.enumerated() {
             if (i < selectedBuildingcornerNodes.count-1) {
-                addLineBetween(start: node.position, end: selectedBuildingcornerNodes[i+1].position)
+                let from = node.position
+                let to = selectedBuildingcornerNodes[i+1].position
+                addLineBetween(start: from, end: to)
+                addDistanceText(distance: distance(from: from, to: to), at: midpoint(from: from, to: to))
             }
         }
     }
@@ -223,18 +234,32 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         parent.addChildNode(textNode)
     }
     
+    func midpoint(from: SCNVector3, to: SCNVector3) -> SCNVector3 {
+        let x = from.x + ((to.x - from.x)/2)
+        let y = from.y + ((to.y - from.y)/2)
+        let z = from.z + ((to.z - from.z)/2)
+
+        return SCNVector3(x, y, z)
+    }
     
-//    func addDistanceText(distance: Float, at point: SCNVector3) {
-//        let textGeometry = SCNText(string: String(format: "%.1f\"", distance.metersToInches()), extrusionDepth: 1)
-//        textGeometry.font = UIFont.systemFont(ofSize: 10)
-//        textGeometry.firstMaterial?.diffuse.contents = UIColor.black
-//
-//        let textNode = SCNNode(geometry: textGeometry)
-//        textNode.position = SCNVector3Make(point.x, point.y, point.z);
-//        textNode.scale = SCNVector3Make(0.005, 0.005, 0.005)
-//
-//        sceneView.scene.rootNode.addChildNode(textNode)
-//    }
+    func distance(from: SCNVector3, to: SCNVector3) -> Float {
+        let toxSq = pow(to.x - from.x, 2)
+        let toySq = pow(to.y - from.y, 2)
+        let tozSq = pow(to.z - from.z, 2)
+        return sqrtf(toxSq + toySq + tozSq)
+    }
+    
+    func addDistanceText(distance: Float, at point: SCNVector3) {
+        let textGeometry = SCNText(string: String(format: "%.1f ft", distance*3.28084), extrusionDepth: 1)
+        textGeometry.font = UIFont.systemFont(ofSize: 10)
+        textGeometry.firstMaterial?.diffuse.contents = UIColor.black
+
+        let textNode = SCNNode(geometry: textGeometry)
+        textNode.position = SCNVector3Make(point.x, point.y, point.z);
+        textNode.scale = SCNVector3Make(0.005, 0.005, 0.005)
+
+        sceneView.scene.rootNode.addChildNode(textNode)
+    }
     
     
     override func viewWillAppear(_ animated: Bool) {
@@ -280,7 +305,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
                         let point1 = planeIntersect.pointAt(y: 0)
                         node.position = SCNVector3(x: point1.x, y: 0, z: point1.y)
                         buildCornerNodes.append(node)
-                        addText(string: "SELECT", parent: node)
+                        // addText(string: "SELECT", parent: node)
                         sceneView.scene.rootNode.addChildNode(node)
                     }
                 }
