@@ -10,6 +10,88 @@ import UIKit
 import SceneKit
 import ARKit
 
+class RipperNode {
+    var visits: Int = 0
+    var scnNode: SCNNode
+    var children: [RipperNode] = []
+    init(node: SCNNode) {
+       scnNode = node
+    }
+    
+    func addChild(node: SCNNode) {
+        children.append(RipperNode(node: node))
+    }
+    
+    func addChildren(nodes: [RipperNode]) {
+        children = children + nodes
+    }
+}
+
+class RipperForest {
+    // top level 3D objects
+    var topLevelNodes: [RipperNode] = []
+    var viewController: ViewController
+    
+    init(viewController: ViewController) {
+        self.viewController = viewController
+        for node in viewController.sceneView.scene.rootNode.childNodes {
+            topLevelNodes.append(RipperNode(node: node))
+        }
+    }
+    
+    func dfs() {
+        for node: RipperNode in topLevelNodes {
+            dfsRecursive(node: node)
+        }
+    }
+    
+    func dfsRecursive(node: RipperNode) {
+        if node.visits > 1 { return }
+        let widgets: [SCNNode] = [node.scnNode] + node.scnNode.childNodes;
+        for widget in widgets {
+            if isExecutable(widget: widget) {
+                execute(widget: widget)
+                let c = invokedNodes()
+                print(widget)
+                print("INVOKED")
+                print(c)
+                topLevelNodes = topLevelNodes + c
+                node.addChildren(nodes: c)
+                node.visits += 1
+                for child in c {
+                    dfsRecursive(node: child)
+                }
+            }
+        }
+    }
+    
+    fileprivate func isExecutable(widget: SCNNode) -> Bool {
+        return widget.parent != nil && (widget.geometry is SCNPlane || widget.geometry is SCNSphere)
+    }
+    
+    fileprivate func execute(widget: SCNNode) {
+        if widget.geometry is SCNPlane {
+            viewController.selectPlane(widget)
+        } else if widget.geometry is SCNSphere {
+            viewController.selectCorner(widget)
+        }
+    }
+    
+    fileprivate func invokedNodes() -> [RipperNode] {
+        var invoked: [RipperNode] = []
+        var existing: [SCNNode] = []
+        for node in topLevelNodes {
+            existing.append(node.scnNode)
+        }
+        for scnNode in viewController.sceneView.scene.rootNode.childNodes {
+            if !existing.contains(scnNode) {
+                invoked.append(RipperNode(node: scnNode))
+            }
+        }
+        return invoked
+    }
+}
+
 extension SCNGeometry {
     class func lineFrom(vector vector1: SCNVector3, toVector vector2: SCNVector3) -> SCNGeometry {
         let indices: [Int32] = [0, 1]
@@ -59,11 +141,18 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     var buildingLineNodes: [SCNNode] = [];
     var selectedeNodes: [Int] = [];
     var building: Building = Building();
-//    var firstNode: SCNNode!
-//    var secondNode: SCNNode!
-//    var lineNode: SCNNode!
-//    var firstPlane: ARPlaneAnchor!
-//    var secondPlane: ARPlaneAnchor!
+    
+    var rippButton:UIButton = {
+        let btn = UIButton(type: .system)
+        btn.setTitle("Rip", for: .normal)
+        btn.setTitleColor(.black, for: .normal)
+        btn.backgroundColor = .white
+        btn.frame = CGRect(x: 0, y: 0, width: 110, height: 60)
+        btn.center = CGPoint(x: UIScreen.main.bounds.width/2, y: UIScreen.main.bounds.height*0.90)
+        btn.layer.cornerRadius = btn.bounds.height/2
+        btn.tag = 0
+        return btn
+    }()
     
     fileprivate func nodeForAnchor(_ anchor: ARPlaneAnchor) -> SCNNode! {
         if let i = planeAnchors.firstIndex(of: anchor) {
@@ -108,8 +197,15 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
         sceneView.debugOptions = [.showFeaturePoints, .showWireframe]
         
+        sceneView.showsLargeContentViewer = true
+        
         let gestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(tapped))
         sceneView.addGestureRecognizer(gestureRecognizer)
+        
+        self.view.addSubview(rippButton)
+        
+        rippButton.addTarget(self, action: #selector(self.rippAction(sender:)), for: .touchUpInside)
+
     }
     
     fileprivate func selectNode(_ node: SCNNode) {
@@ -146,48 +242,55 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         }
     }
     
-    fileprivate func selectNewNode(_ cornerNode: SCNNode, _ hitTest: SCNHitTestResult) {
+    fileprivate func selectCorner(_ cornerNode: SCNNode) {
         let geometry = SCNSphere(radius: 0.02)
         geometry.firstMaterial?.diffuse.contents = UIColor.green
-        let newNode = SCNNode(geometry: geometry)
-        newNode.position = cornerNode.position
-        hitTest.node.removeFromParentNode()
-        cornerNode.removeFromParentNode()
+        cornerNode.geometry = geometry
         selectedBuildingcornerNodes.append(cornerNode)
         drawLines()
-        sceneView.scene.rootNode.addChildNode(newNode)
     }
     
     @objc func tapped(gesture: UITapGestureRecognizer) {
-        let touchPosition = gesture.location(in: sceneView)
+        let touchPosition: CGPoint = gesture.location(in: sceneView)
+        handleHitTest(touchPosition: touchPosition)
+    }
+    
+    @objc func rippAction(sender: UIButton) {
+        let forest = RipperForest(viewController: self)
+        forest.dfs()
+    }
+    
+    fileprivate func selectPlane(_ node: SCNNode) {
+        if planeNodes.contains(node) {
+            if isNodeSelected(node) {
+                deselectNode(node)
+            } else {
+                selectNode(node)
+            }
+            findIntersect()
+        }
+    }
+    
+    func handleHitTest(touchPosition: CGPoint) {
+        print (touchPosition)
         let hitTestResults = sceneView.hitTest(touchPosition)
         guard let hitTest = hitTestResults.first else { return }
         guard let textElement = hitTest.node.geometry as? SCNText else {
-            guard let sphereElement = hitTest.node.geometry as? SCNSphere else {
-                if planeNodes.contains(hitTest.node) {
-                    if isNodeSelected(hitTest.node) {
-                        deselectNode(hitTest.node)
-                    } else {
-                        selectNode(hitTest.node)
-                    }
-                    findIntersect()
-                }
-                return
+            if hitTest.node.geometry is SCNPlane {
+                selectPlane(hitTest.node)
+            } else if hitTest.node.geometry is SCNSphere {
+                selectCorner(hitTest.node)
             }
-            selectNewNode(hitTest.node, hitTest)
             return
         }
         
-        print(hitTest.node)
         guard let text: String = textElement.string as? String else { return }
-        print(text)
-        print(buildCornerNodes.count)
 
         if text == "SELECT" {
             let green = UIColor.green
             textElement.materials.first?.diffuse.contents = green
             guard let cornerNode: SCNNode = hitTest.node.parent else {return}
-            selectNewNode(cornerNode, hitTest)
+            selectCorner(cornerNode)
         }
     }
     
