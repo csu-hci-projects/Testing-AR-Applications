@@ -10,12 +10,137 @@ import UIKit
 import SceneKit
 import ARKit
 
-class RipperNode {
+class EventNode: Equatable, CustomStringConvertible {
+    var type: String = "SELECT"
+    var node: RipperNode
+    init(node: SCNNode) {
+        self.node = RipperNode(node: node)
+    }
+    
+    init(node: RipperNode) {
+        self.node = node
+    }
+    
+    static func == (lhs: EventNode, rhs: EventNode) -> Bool {
+        return lhs.node == rhs.node
+    }
+    
+    public var description: String {
+        return "\(type) \(node)"
+    }
+}
+
+class EventFlowEdge: Equatable, CustomStringConvertible {
+    var from: EventNode
+    var to: EventNode
+    init(from: EventNode, to: EventNode) {
+        self.from = from
+        self.to = to
+    }
+    
+    static func == (lhs: EventFlowEdge, rhs: EventFlowEdge) -> Bool {
+        return lhs.from == rhs.from && lhs.to == rhs.to
+    }
+    
+    public var description: String {
+        return "from: \(from), to: \(to)"
+    }
+}
+
+class EventFlowGraph: CustomStringConvertible {
+    var vertices: [EventNode] = []
+    var edges: [EventFlowEdge] = []
+    
+    var ripperNodes: [RipperNode] {
+        get {
+            var nodes: [RipperNode] = []
+            for vertex in vertices {
+                nodes.append(vertex.node)
+            }
+            return nodes
+        }
+    }
+    
+    init() {}
+    
+    func addVertex(node: RipperNode) {
+        if (!ripperNodes.contains(node)) {
+            vertices.append(EventNode(node: node))
+        }
+    }
+    
+    func addEdge(e: EventFlowEdge) {
+        print("ADDING EDGE: \(e)")
+        if !vertices.contains(e.from) {
+            vertices.append(e.from)
+        }
+        if !vertices.contains(e.to) {
+            vertices.append(e.to)
+        }
+        if !edges.contains(e) {
+            edges.append(e)
+        }
+    }
+    
+    func addEdge(from: SCNNode, to: RipperNode) {
+        let edge = EventFlowEdge(from: checkExisting(node: from), to: EventNode(node: to))
+        addEdge(e: edge)
+    }
+    
+    func addEdge(from: RipperNode, to: SCNNode) {
+        let edge = EventFlowEdge(from: EventNode(node: from), to: checkExisting(node: to))
+        addEdge(e: edge)
+    }
+    
+    func addEdge(from: RipperNode, to: RipperNode) {
+        let edge = EventFlowEdge(from: EventNode(node: from), to: EventNode(node: to))
+        addEdge(e: edge)
+    }
+    
+    func checkExisting(node: SCNNode) -> EventNode {
+        for (i, ripper) in ripperNodes.enumerated() {
+            if ripper.scnNode == node {
+                return vertices[i]
+            }
+        }
+        
+        let eventNode: EventNode = EventNode(node: RipperNode(node: node))
+        return eventNode
+    }
+    
+    public var description: String {
+        return "Vertices: \(vertices)\nEdges: \(edges)"
+    }
+    
+    func generateTestCases() {
+        // goal is four corners selected
+//        let goal = 0
+//        let paths
+    }
+}
+
+class RipperNode: Equatable, CustomStringConvertible {
+    static var nextVal = 1;
+    static var nextValWalls = 1;
+    static var nextValNodes = 1;
     var visits: Int = 0
+    var id: Int = 0
     var scnNode: SCNNode
     var children: [RipperNode] = []
     init(node: SCNNode) {
-       scnNode = node
+        id = RipperNode.nextVal
+        RipperNode.nextVal += 1
+        scnNode = node
+        if (node.geometry != nil) {
+            if node.geometry is SCNPlane {
+                id = RipperNode.nextValWalls
+                RipperNode.nextValWalls += 1
+            }
+            if node.geometry is SCNSphere {
+                id = RipperNode.nextValNodes
+                RipperNode.nextValNodes += 1
+            }
+        }
     }
     
     func addChild(node: SCNNode) {
@@ -25,40 +150,102 @@ class RipperNode {
     func addChildren(nodes: [RipperNode]) {
         children = children + nodes
     }
+    
+    static func == (lhs: RipperNode, rhs: RipperNode) -> Bool {
+        return lhs.scnNode == rhs.scnNode
+        // return lhs.scnNode.position.x == rhs.scnNode.position.x && lhs.scnNode.position.y == rhs.scnNode.position.y && lhs.scnNode.position.z == rhs.scnNode.position.z
+    }
+    
+    public var description: String {
+        if (scnNode.geometry is SCNPlane) {
+            return "Wall \(id)"
+        } else if (scnNode.geometry is SCNSphere) {
+            return "Corner \(id)"
+        } else {
+            return "Node \(id)"
+        }
+    }
 }
 
 class RipperForest {
     // top level 3D objects
     var topLevelNodes: [RipperNode] = []
+    var allNodes: [RipperNode] = []
     var viewController: ViewController
+    var efg: EventFlowGraph
+    var nodeLabels = [String: SCNNode]()
+    var currentRipper: RipperNode!
+    var nextRipper: RipperNode!
+    
+    var allSceneNodes: [SCNNode] {
+        get {
+            var nodes: [SCNNode] = []
+            for node in viewController.sceneView.scene.rootNode.childNodes {
+                recurseSceneNode(node: node, &nodes)
+            }
+            return nodes
+        }
+    }
+    
+    func recurseSceneNode(node: SCNNode, _ nodes: inout [SCNNode]) {
+        nodes.append(node)
+        for c in node.childNodes {
+            recurseSceneNode(node: c, &nodes)
+        }
+    }
     
     init(viewController: ViewController) {
         self.viewController = viewController
-        for node in viewController.sceneView.scene.rootNode.childNodes {
-            topLevelNodes.append(RipperNode(node: node))
+        self.efg = EventFlowGraph()
+        for node in allSceneNodes {
+            let ripper = RipperNode(node: node)
+            allNodes.append(ripper)
+            topLevelNodes.append(ripper)
         }
+        print("TOP level: \(topLevelNodes)")
     }
     
     func dfs() {
         for node: RipperNode in topLevelNodes {
             dfsRecursive(node: node)
         }
+        for (text, node) in nodeLabels {
+            viewController.addText(string: text, parent: node)
+        }
+        print("EVENT FLOW GRAPH")
+        print(efg)
+        for edge in efg.edges {
+            viewController.addLineBetween(start: edge.from.node.scnNode.position, end: edge.from.node.scnNode.position)
+        }
     }
     
     func dfsRecursive(node: RipperNode) {
-        if node.visits > 1 { return }
-        let widgets: [SCNNode] = [node.scnNode] + node.scnNode.childNodes;
+        if isExecutable(widget: node.scnNode) {
+            if (currentRipper != nil) {
+                efg.addEdge(from: currentRipper, to: node)
+            }
+            currentRipper = node
+            nodeLabels[node.description] = node.scnNode
+        }
+        if node.visits > 0 { return }
+        node.visits += 1
+        print("DFS STEP: \(node)")
+        var widgets: [SCNNode] = [];
+        recurseSceneNode(node: node.scnNode, &widgets)
+        // remove itself so we don't reexecute node
+        widgets.remove(at: 0)
+        print("WIDGETS")
+        print(widgets)
         for widget in widgets {
             if isExecutable(widget: widget) {
                 execute(widget: widget)
+                print("executed widget in \(node)")
                 let c = invokedNodes()
-                print(widget)
-                print("INVOKED")
-                print(c)
-                topLevelNodes = topLevelNodes + c
                 node.addChildren(nodes: c)
-                node.visits += 1
                 for child in c {
+                    if isExecutable(widget: child.scnNode) {
+                        efg.addEdge(from: widget, to: child)
+                    }
                     dfsRecursive(node: child)
                 }
             }
@@ -66,28 +253,36 @@ class RipperForest {
     }
     
     fileprivate func isExecutable(widget: SCNNode) -> Bool {
-        return widget.parent != nil && (widget.geometry is SCNPlane || widget.geometry is SCNSphere)
+        if widget.geometry == nil { return false }
+        guard let geometry = widget.geometry as? SCNPlane else {
+            guard let geometry = widget.geometry as? SCNSphere else {
+                return false
+            }
+            return true
+        }
+        return true
     }
     
     fileprivate func execute(widget: SCNNode) {
-        if widget.geometry is SCNPlane {
-            viewController.selectPlane(widget)
-        } else if widget.geometry is SCNSphere {
+        if widget.geometry is SCNSphere {
             viewController.selectCorner(widget)
+        } else if widget.geometry is SCNPlane {
+            viewController.selectPlane(widget)
         }
     }
     
     fileprivate func invokedNodes() -> [RipperNode] {
         var invoked: [RipperNode] = []
         var existing: [SCNNode] = []
-        for node in topLevelNodes {
+        for node in allNodes {
             existing.append(node.scnNode)
         }
-        for scnNode in viewController.sceneView.scene.rootNode.childNodes {
+        for scnNode in allSceneNodes {
             if !existing.contains(scnNode) {
                 invoked.append(RipperNode(node: scnNode))
             }
         }
+        allNodes = allNodes + invoked
         return invoked
     }
 }
@@ -134,13 +329,14 @@ extension ARPlaneAnchor {
 }
 
 class ViewController: UIViewController, ARSCNViewDelegate {
-    var planeAnchors: [ARPlaneAnchor] = [];
-    var planeNodes: [SCNNode] = [];
-    var buildCornerNodes: [SCNNode] = [];
-    var selectedBuildingcornerNodes: [SCNNode] = [];
-    var buildingLineNodes: [SCNNode] = [];
-    var selectedeNodes: [Int] = [];
-    var building: Building = Building();
+    var planeAnchors: [ARPlaneAnchor] = []
+    var planeNodes: [SCNNode] = []
+    var buildCornerNodes: [SCNNode] = []
+    var selectedBuildingcornerNodes: [SCNNode] = []
+    var buildingLineNodes: [SCNNode] = []
+    var selectedeNodes: [Int] = []
+    var building: Building = Building()
+    var intersectToCorner = [String: Int]()
     
     var rippButton:UIButton = {
         let btn = UIButton(type: .system)
@@ -153,6 +349,18 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         btn.tag = 0
         return btn
     }()
+    
+    fileprivate func cornerForIntersect(i: Int, j: Int) -> SCNNode! {
+        if let k = intersectToCorner["\(i)\(j)"] {
+            return buildCornerNodes[k]
+        } else {
+            return nil
+        }
+    }
+    
+    fileprivate func setCornerForInterset(i: Int, j: Int, node: SCNNode) {
+        intersectToCorner["\(i)\(j)"] = buildCornerNodes.firstIndex(of: node)
+    }
     
     fileprivate func nodeForAnchor(_ anchor: ARPlaneAnchor) -> SCNNode! {
         if let i = planeAnchors.firstIndex(of: anchor) {
@@ -246,7 +454,9 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         let geometry = SCNSphere(radius: 0.02)
         geometry.firstMaterial?.diffuse.contents = UIColor.green
         cornerNode.geometry = geometry
-        selectedBuildingcornerNodes.append(cornerNode)
+        if !selectedBuildingcornerNodes.contains(cornerNode) {
+            selectedBuildingcornerNodes.append(cornerNode)
+        }
         drawLines()
     }
     
@@ -387,10 +597,10 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     // MARK: - ARSCNViewDelegate
     
     fileprivate func findIntersect() {
-        for node in buildCornerNodes {
-            node.removeFromParentNode()
-        }
-        buildCornerNodes = []
+//        for node in buildCornerNodes {
+//            node.removeFromParentNode()
+//        }
+//        buildCornerNodes = []
         
         let geometry = SCNSphere(radius: 0.01)
         geometry.firstMaterial?.diffuse.contents = UIColor.red
@@ -403,13 +613,25 @@ class ViewController: UIViewController, ARSCNViewDelegate {
                         let secondPlane = planeAnchors[j]
                         
                         let planeIntersect: PlaneIntersection = PlaneIntersection(plane1: firstPlane.boundaryXYZ, plane2: secondPlane.boundaryXYZ)
-                        
-                        let node = SCNNode(geometry: geometry)
                         let point1 = planeIntersect.pointAt(y: 0)
-                        node.position = SCNVector3(x: point1.x, y: 0, z: point1.y)
-                        buildCornerNodes.append(node)
+                        
+                        if let node = cornerForIntersect(i: i, j: j) {
+                            print("node found")
+                            node.position = SCNVector3(x: point1.x, y: 0, z: point1.y)
+                        } else if let node = cornerForIntersect(i: j, j: i) {
+                            print("node found")
+                            node.position = SCNVector3(x: point1.x, y: 0, z: point1.y)
+                        } else {
+                            print("node NOT found")
+                            let node = SCNNode(geometry: geometry)
+                            node.position = SCNVector3(x: point1.x, y: 0, z: point1.y)
+                            buildCornerNodes.append(node)
+                            setCornerForInterset(i: i, j: j, node: node)
+                            setCornerForInterset(i: j, j: i, node: node)
+                            sceneView.scene.rootNode.addChildNode(node)
+                        }
+
                         // addText(string: "SELECT", parent: node)
-                        sceneView.scene.rootNode.addChildNode(node)
                     }
                 }
             }
