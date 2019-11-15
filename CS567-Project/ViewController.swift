@@ -153,7 +153,6 @@ class RipperNode: Equatable, CustomStringConvertible {
     
     static func == (lhs: RipperNode, rhs: RipperNode) -> Bool {
         return lhs.scnNode == rhs.scnNode
-        // return lhs.scnNode.position.x == rhs.scnNode.position.x && lhs.scnNode.position.y == rhs.scnNode.position.y && lhs.scnNode.position.z == rhs.scnNode.position.z
     }
     
     public var description: String {
@@ -188,7 +187,9 @@ class RipperForest {
     }
     
     func recurseSceneNode(node: SCNNode, _ nodes: inout [SCNNode]) {
-        nodes.append(node)
+        if isExecutable(widget: node) {
+            nodes.append(node)
+        }
         for c in node.childNodes {
             recurseSceneNode(node: c, &nodes)
         }
@@ -220,34 +221,22 @@ class RipperForest {
     }
     
     func dfsRecursive(node: RipperNode) {
-        if isExecutable(widget: node.scnNode) {
-            if (currentRipper != nil) {
-                efg.addEdge(from: currentRipper, to: node)
-            }
-            currentRipper = node
-            nodeLabels[node.description] = node.scnNode
+        if (currentRipper != nil) {
+            efg.addEdge(from: currentRipper, to: node)
         }
-        if node.visits > 0 { return }
-        node.visits += 1
+        currentRipper = node
+        nodeLabels[node.description] = node.scnNode
         print("DFS STEP: \(node)")
-        var widgets: [SCNNode] = [];
-        recurseSceneNode(node: node.scnNode, &widgets)
-        // remove itself so we don't reexecute node
-        widgets.remove(at: 0)
+        let widgets: [SCNNode] = [node.scnNode];
         print("WIDGETS")
         print(widgets)
         for widget in widgets {
-            if isExecutable(widget: widget) {
-                execute(widget: widget)
-                print("executed widget in \(node)")
-                let c = invokedNodes()
-                node.addChildren(nodes: c)
-                for child in c {
-                    if isExecutable(widget: child.scnNode) {
-                        efg.addEdge(from: widget, to: child)
-                    }
-                    dfsRecursive(node: child)
-                }
+            execute(widget: widget)
+            print("executed widget in \(node)")
+            let c = invokedNodes()
+            node.addChildren(nodes: c)
+            for child in c {
+                dfsRecursive(node: child)
             }
         }
     }
