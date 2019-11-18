@@ -32,3 +32,12 @@
    3. Log/Report generated test cases.
    4. Return to precondition state manually execute generated test cases.
   
+## Checkpoint 4:
+
+* Alogirithm and reporting tools are complete for generating test cases - demo
+
+Next Steps:
+
+* Will begin experiments with hopes to use multiple scenarios, but test execution may be limited to a subset of generated test cases due to time limitations since test cases will need to be executed manually.
+* Start the paper.
+* Bonus - I hope to dive further into AI planning and search.  The current method I have implemented works well for small number of virtual objects, but AR enviornments with many objects will generate thousands or tens of thousands of possible test cases that may or may not be feasible.  AI planning and search can discover test cases that are valid and feasible.
