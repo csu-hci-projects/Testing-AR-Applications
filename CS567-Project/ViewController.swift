@@ -13,6 +13,7 @@ import ARKit
 class EventNode: Equatable, CustomStringConvertible {
     var type: String = "SELECT"
     var node: RipperNode
+    var visited: Bool = false
     init(node: SCNNode) {
         self.node = RipperNode(node: node)
     }
@@ -113,9 +114,64 @@ class EventFlowGraph: CustomStringConvertible {
     }
     
     func generateTestCases() {
-        // goal is four corners selected
-//        let goal = 0
-//        let paths
+        // get first vertex in the list
+        for vertex in vertices {
+            vertex.visited = false
+        }
+        let source = vertices[0]
+        let destination = vertices[vertices.count - 1]
+        var path = [String]()
+        var paths = [[String]]()
+        getAllPaths(source, destination, &path, &paths)
+        exportCSV(paths)
+    }
+    
+    func exportCSV(_ paths: [[String]]) {
+        var csvString = ""
+        for path in paths {
+            csvString += path.joined(separator: ",")
+            csvString += "\n"
+        }
+        do {
+
+            let path = try FileManager.default.url(for: .documentDirectory,
+                                                   in: .allDomainsMask,
+                                                   appropriateFor: nil,
+                                                   create: false)
+
+            let fileURL = path.appendingPathComponent("TestCases\(Date()).csv")
+            try csvString.write(to: fileURL, atomically: true , encoding: .utf8)
+        } catch {
+            print("error creating file")
+        }
+    }
+    
+    func getAllPaths(_ source: EventNode, _ destination: EventNode, _ path: inout [String], _ paths: inout [[String]]) {
+        source.visited = true
+        path.append(source.description)
+        
+        if source == destination {
+            print(path)
+            paths.append(path)
+        } else {
+            for node in neighbors(node: source) {
+                if !node.visited {
+                    getAllPaths(node, destination, &path, &paths)
+                }
+            }
+        }
+        path.popLast()
+        source.visited = false
+    }
+    
+    func neighbors(node: EventNode) -> [EventNode] {
+        var neighs: [EventNode] = []
+        for edge in edges {
+            if edge.from == node {
+                neighs.append(edge.to)
+            }
+        }
+        return neighs
     }
 }
 
@@ -218,6 +274,7 @@ class RipperForest {
         for edge in efg.edges {
             viewController.addLineBetween(start: edge.from.node.scnNode.position, end: edge.from.node.scnNode.position)
         }
+        efg.generateTestCases()
     }
     
     func dfsRecursive(node: RipperNode) {
@@ -236,6 +293,7 @@ class RipperForest {
             let c = invokedNodes()
             node.addChildren(nodes: c)
             for child in c {
+                efg.addEdge(from: widget, to: child)
                 dfsRecursive(node: child)
             }
         }
@@ -586,10 +644,6 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     // MARK: - ARSCNViewDelegate
     
     fileprivate func findIntersect() {
-//        for node in buildCornerNodes {
-//            node.removeFromParentNode()
-//        }
-//        buildCornerNodes = []
         
         let geometry = SCNSphere(radius: 0.01)
         geometry.firstMaterial?.diffuse.contents = UIColor.red
@@ -619,8 +673,6 @@ class ViewController: UIViewController, ARSCNViewDelegate {
                             setCornerForInterset(i: j, j: i, node: node)
                             sceneView.scene.rootNode.addChildNode(node)
                         }
-
-                        // addText(string: "SELECT", parent: node)
                     }
                 }
             }
