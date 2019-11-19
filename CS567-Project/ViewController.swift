@@ -14,6 +14,7 @@ class EventNode: Equatable, CustomStringConvertible {
     var type: String = "SELECT"
     var node: RipperNode
     var visited: Bool = false
+    var selected: Bool = false
     init(node: SCNNode) {
         self.node = RipperNode(node: node)
     }
@@ -84,17 +85,17 @@ class EventFlowGraph: CustomStringConvertible {
     }
     
     func addEdge(from: SCNNode, to: RipperNode) {
-        let edge = EventFlowEdge(from: checkExisting(node: from), to: EventNode(node: to))
+        let edge = EventFlowEdge(from: checkExisting(node: from), to: checkExisting(node: to))
         addEdge(e: edge)
     }
     
     func addEdge(from: RipperNode, to: SCNNode) {
-        let edge = EventFlowEdge(from: EventNode(node: from), to: checkExisting(node: to))
+        let edge = EventFlowEdge(from: checkExisting(node: from), to: checkExisting(node: to))
         addEdge(e: edge)
     }
     
     func addEdge(from: RipperNode, to: RipperNode) {
-        let edge = EventFlowEdge(from: EventNode(node: from), to: EventNode(node: to))
+        let edge = EventFlowEdge(from: checkExisting(node: from), to: checkExisting(node: to))
         addEdge(e: edge)
     }
     
@@ -109,8 +110,31 @@ class EventFlowGraph: CustomStringConvertible {
         return eventNode
     }
     
+    func checkExisting(node: RipperNode) -> EventNode {
+        for (i, ripper) in ripperNodes.enumerated() {
+            if ripper == node {
+                return vertices[i]
+            }
+        }
+        
+        let eventNode: EventNode = EventNode(node: node)
+        return eventNode
+    }
+    
     public var description: String {
         return "Vertices: \(vertices)\nEdges: \(edges)"
+    }
+    
+    func getFollows(forest: RipperForest, node: RipperNode) {
+        // all pairs of vertices
+        for (i, one) in vertices.enumerated() {
+            for (j, two) in vertices.enumerated() {
+                if (i != j) {
+                    addEdge(e: EventFlowEdge(from: one, to: two))
+                    addEdge(e: EventFlowEdge(from: two, to: one))
+                }
+            }
+        }
     }
     
     func generateTestCases() {
@@ -183,6 +207,8 @@ class RipperNode: Equatable, CustomStringConvertible {
     var id: Int = 0
     var scnNode: SCNNode
     var children: [RipperNode] = []
+    var parent: RipperNode!
+    
     init(node: SCNNode) {
         id = RipperNode.nextVal
         RipperNode.nextVal += 1
@@ -204,6 +230,9 @@ class RipperNode: Equatable, CustomStringConvertible {
     }
     
     func addChildren(nodes: [RipperNode]) {
+        for node in nodes {
+            node.parent = self
+        }
         children = children + nodes
     }
     
@@ -270,6 +299,7 @@ class RipperForest {
             viewController.addText(string: text, parent: node)
         }
         print("EVENT FLOW GRAPH")
+        efg.getFollows(forest: self, node: topLevelNodes[0])
         print(efg)
         for edge in efg.edges {
             viewController.addLineBetween(start: edge.from.node.scnNode.position, end: edge.from.node.scnNode.position)
@@ -278,9 +308,11 @@ class RipperForest {
     }
     
     func dfsRecursive(node: RipperNode) {
-        if (currentRipper != nil) {
-            efg.addEdge(from: currentRipper, to: node)
-        }
+        efg.addVertex(node: node)
+//        // efg.getFollows(forest: self, node: node)
+//        if currentRipper != nil {
+//            efg.addEdge(from: currentRipper, to: node)
+//        }
         currentRipper = node
         nodeLabels[node.description] = node.scnNode
         print("DFS STEP: \(node)")
@@ -291,9 +323,11 @@ class RipperForest {
             execute(widget: widget)
             print("executed widget in \(node)")
             let c = invokedNodes()
+            print("INVOKED")
+            print(c)
             node.addChildren(nodes: c)
             for child in c {
-                efg.addEdge(from: widget, to: child)
+                // efg.addEdge(from: node, to: child)
                 dfsRecursive(node: child)
             }
         }
@@ -326,7 +360,9 @@ class RipperForest {
         }
         for scnNode in allSceneNodes {
             if !existing.contains(scnNode) {
-                invoked.append(RipperNode(node: scnNode))
+                let ripper = RipperNode(node: scnNode)
+                invoked.append(ripper)
+                efg.addVertex(node: ripper)
             }
         }
         allNodes = allNodes + invoked
