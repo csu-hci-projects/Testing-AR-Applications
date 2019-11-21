@@ -51,4 +51,19 @@ class PlaneIntersection {
         let aCVector = simd_float2x2(simd_float2(eq1.x, eq2.x), simd_float2(eq1.z, eq2.z)).inverse
         return aCVector * cMinusd
     }
+    
+    
+    var angleBetween: Float {
+        get {
+            let a1 = eq1.x
+            let b1 = eq1.y
+            let c1 = eq1.z
+            let a2 = eq2.x
+            let b2 = eq2.y
+            let c2 = eq2.z
+            let num = a1*a2 + b1*b2 + c1*c2
+            let den = sqrtf(a1*a1 + b1*b1 + c1*c1) * sqrtf(a2*a2 + b2*b2 + c2*c2)
+            return acosf(abs(num/den)) * 180 / .pi
+        }
+    }
 }
