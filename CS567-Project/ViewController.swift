@@ -142,11 +142,14 @@ class EventFlowGraph: CustomStringConvertible {
         for vertex in vertices {
             vertex.visited = false
         }
-        let source = vertices[0]
         let destination = vertices[vertices.count - 1]
         var path = [String]()
         var paths = [[String]]()
-        getAllPaths(source, destination, &path, &paths)
+        for source in vertices {
+            if source.node.description.contains("Wall") {
+                getAllPaths(source, destination, &path, &paths)
+            }
+        }
         exportCSV(paths)
     }
     
@@ -175,8 +178,10 @@ class EventFlowGraph: CustomStringConvertible {
         path.append(source.description)
         
         if source == destination {
-            print(path)
-            paths.append(path)
+            if path.count == vertices.count {
+                print(path)
+                paths.append(path)
+            }
         } else {
             for node in neighbors(node: source) {
                 if !node.visited {
@@ -692,6 +697,10 @@ class ViewController: UIViewController, ARSCNViewDelegate {
                         let secondPlane = planeAnchors[j]
                         
                         let planeIntersect: PlaneIntersection = PlaneIntersection(plane1: firstPlane.boundaryXYZ, plane2: secondPlane.boundaryXYZ)
+                        
+                        print("ANGLE: \(planeIntersect.angleBetween)")
+                        if planeIntersect.angleBetween < 30 { return }
+                        
                         let point1 = planeIntersect.pointAt(y: 0)
                         
                         if let node = cornerForIntersect(i: i, j: j) {
