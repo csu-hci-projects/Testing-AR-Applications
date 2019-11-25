@@ -34,7 +34,7 @@
   
 ## Checkpoint 4:
 
-* Alogirithm and reporting tools are complete for generating test cases - demo
+* Algorithm and reporting tools are complete for generating test cases - demo
 
 Next Steps:
 
