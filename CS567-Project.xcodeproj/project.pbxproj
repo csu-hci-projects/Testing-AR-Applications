@@ -43,6 +43,7 @@
 		2CF754F42391792400AE361A /* results */ = {isa = PBXFileReference; lastKnownFileType = folder; path = results; sourceTree = "<group>"; };
 		2CF754F52394400900AE361A /* feas-4walls.rb */ = {isa = PBXFileReference; lastKnownFileType = text.script.ruby; path = "feas-4walls.rb"; sourceTree = "<group>"; };
 		2CF754F62394406100AE361A /* feas-5walls.rb */ = {isa = PBXFileReference; lastKnownFileType = text.script.ruby; path = "feas-5walls.rb"; sourceTree = "<group>"; };
+		2CF754F7239460BF00AE361A /* paper_draft1.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; name = paper_draft1.pdf; path = ../../Downloads/paper_draft1.pdf; sourceTree = "<group>"; };
 		B692C28D2344D2AB006FF55B /* CS567-Project.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "CS567-Project.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B692C2902344D2AB006FF55B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B692C2942344D2AB006FF55B /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -91,6 +92,7 @@
 			children = (
 				B6F2D2122363500E004406B3 /* CS514_PROPOSAL.pdf */,
 				2CF754F52394400900AE361A /* feas-4walls.rb */,
+				2CF754F7239460BF00AE361A /* paper_draft1.pdf */,
 				B692C2C023463FE8006FF55B /* README.md */,
 				2CF754F62394406100AE361A /* feas-5walls.rb */,
 				B692C28F2344D2AB006FF55B /* CS567-Project */,
