@@ -39,6 +39,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		2C9C070F23970C7A0026899A /* rlafranc_poster.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = rlafranc_poster.pdf; sourceTree = "<group>"; };
 		2CB95A822373128100A3581A /* Building.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Building.swift; sourceTree = "<group>"; };
 		2CF754F42391792400AE361A /* results */ = {isa = PBXFileReference; lastKnownFileType = folder; path = results; sourceTree = "<group>"; };
 		2CF754F52394400900AE361A /* feas-4walls.rb */ = {isa = PBXFileReference; lastKnownFileType = text.script.ruby; path = "feas-4walls.rb"; sourceTree = "<group>"; };
@@ -92,6 +93,7 @@
 			children = (
 				B6F2D2122363500E004406B3 /* CS514_PROPOSAL.pdf */,
 				2CF754F52394400900AE361A /* feas-4walls.rb */,
+				2C9C070F23970C7A0026899A /* rlafranc_poster.pdf */,
 				2CF754F7239460BF00AE361A /* paper_draft1.pdf */,
 				B692C2C023463FE8006FF55B /* README.md */,
 				2CF754F62394406100AE361A /* feas-5walls.rb */,

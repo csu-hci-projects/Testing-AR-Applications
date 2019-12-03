@@ -481,7 +481,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     }
 
     @IBOutlet var sceneView: ARSCNView!
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -489,9 +489,9 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         sceneView.delegate = self
         
         // Show statistics such as fps and timing information
-        sceneView.showsStatistics = true
+        // sceneView.showsStatistics = true
         
-        sceneView.debugOptions = [.showFeaturePoints, .showWireframe]
+        // sceneView.debugOptions = [.showFeaturePoints, .showWireframe]
         
         sceneView.showsLargeContentViewer = true
         
