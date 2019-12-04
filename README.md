@@ -1,4 +1,4 @@
-#  CS567 Final Project - ~~Testing AR Applications~~ Systematic Test Case Generation For Augmented Reality Applications
+#  CS567 Final Project - Systematic Test Case Generation For Augmented Reality Applications
 
 ## Checkpoint 1 updates:
 
