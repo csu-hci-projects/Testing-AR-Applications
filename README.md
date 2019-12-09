@@ -1,5 +1,16 @@
 #  CS567 Final Project - Systematic Test Case Generation For Augmented Reality Applications
 
+**Abstract:** Augmented Reality (AR) is a type of software that superimposes virtual objects into the physical world.  The reliance that AR has on the physical world makes AR applications difficult to test and very little research exists in the area of testing AR applications.  The objective of this paper is to evaluate if traditional techniques used for test generation on 2D graphical user interfaces (GUI) can be applied effectively to AR applications.  We have developed a systematic method that expands on known techniques in test generation and test automation on traditional 2D GUIs and applies them to 3D objects in an AR environment.  The focus of our research is on test generation but we also demonstrate a method that applies both automated and manual steps to create an end to end test solution for AR applications that can be generalized for most AR applications.  The method is demonstrated on a case study of an AR application that has been developed that detects and measures walls of physical structures such as condo buildings, and commercial buildings.  Given multiple scenarios presented for different structures, we were able to generate a total of 42,840 feasible test cases and through manual execution of 30 test cases, discovered a total of 22 faults.  Based on our results we have found that using existing GUI techniques for test generation applied to our method can be effective.  Although our method has been found to be effective, further research and more case studies are recommended for validating our method and to develop more robust methods that can automate the testing process for AR applications.
+
+## Running
+
+This project requires MacOS and iOS hardware and software to run.  A typically MacBook running XCode should suffice for development, and at least an iPhone that supports the requirements for ARKit is required to run the application.
+
+More Info:
+* XCode: [https://developer.apple.com/xcode/](https://developer.apple.com/xcode/)
+* ARKit: [https://developer.apple.com/augmented-reality/](https://developer.apple.com/augmented-reality/)
+
+
 ## Checkpoint 1 updates:
 
 * Scratched ~~Unreal~~ in favor of Xcode/ARKit because Unreal seems to run really slow on my Mac
@@ -49,4 +60,6 @@ Next Steps:
 * CS514 Poster complete - [rlafranc_poster](rlafranc_poster.pdf)
 * Website Complete (minus demo video) - [website](https://www.cs.colostate.edu/~rlafranc/#/cs-567-project)
 
-TODO - demo video
+## Checkpoint 6:
+
+* Project complete and submitted

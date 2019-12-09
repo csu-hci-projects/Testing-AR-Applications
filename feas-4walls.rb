@@ -26,7 +26,6 @@ CSV.open("./results/4walls-feasible.csv", "w") do |c|
       conditions.each do |cond|
          before = row.index(cond[0])
          after = row.index(cond[1])
-         binding.pry
          if before > after
              row[11] = false
          end
