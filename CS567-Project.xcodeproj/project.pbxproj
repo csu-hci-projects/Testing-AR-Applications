@@ -41,6 +41,7 @@
 /* Begin PBXFileReference section */
 		2C9C070F23970C7A0026899A /* rlafranc_poster.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = rlafranc_poster.pdf; sourceTree = "<group>"; };
 		2C9C0711239807B40026899A /* paper_draft1.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = paper_draft1.pdf; sourceTree = "<group>"; };
+		2C9C0713239FF8130026899A /* Latex Code */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "Latex Code"; sourceTree = "<group>"; };
 		2CB95A822373128100A3581A /* Building.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Building.swift; sourceTree = "<group>"; };
 		2CF754F42391792400AE361A /* results */ = {isa = PBXFileReference; lastKnownFileType = folder; path = results; sourceTree = "<group>"; };
 		2CF754F52394400900AE361A /* feas-4walls.rb */ = {isa = PBXFileReference; lastKnownFileType = text.script.ruby; path = "feas-4walls.rb"; sourceTree = "<group>"; };
@@ -101,6 +102,7 @@
 				B692C2A62344D2AD006FF55B /* CS567-ProjectTests */,
 				B692C2B12344D2AD006FF55B /* CS567-ProjectUITests */,
 				B692C28E2344D2AB006FF55B /* Products */,
+				2C9C0713239FF8130026899A /* Latex Code */,
 				2CF754F42391792400AE361A /* results */,
 			);
 			sourceTree = "<group>";
