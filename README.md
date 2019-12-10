@@ -58,7 +58,7 @@ Next Steps:
 * Results collected - [results](results/)
 * Paper draft complete - [paper_draft1](paper_draft1.pdf)
 * CS514 Poster complete - [rlafranc_poster](rlafranc_poster.pdf)
-* Website Complete (minus demo video) - [website](https://www.cs.colostate.edu/~rlafranc/#/cs-567-project)
+* Website Complete (minus demo video) - [website](https://www.cs.colostate.edu/~rlafranc/cs567-project/)
 
 ## Checkpoint 6:
 
